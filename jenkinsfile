@@ -5,7 +5,8 @@ pipeline {
 
         stage('Checkout Source Code') {
             steps {
-                git 'https://github.com/linda-Kaizen2026/nginx-jenkins-helm.git'
+                git branch: 'develop', 
+                url 'https://github.com/linda-Kaizen2026/nginx-jenkins-helm.git'
             }
         }
 
