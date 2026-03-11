@@ -1,4 +1,4 @@
-{{- if .Values.httpRoute.enabled }}
+{{- if and .Values.httpRoute .Values.httpRoute.enabled }}
 {{- $fullName := include "nginx-chart.fullname" . }}
 {{- $svcPort := .Values.service.port }}
 
@@ -9,40 +9,14 @@ metadata:
   labels:
     {{- include "nginx-chart.labels" . | nindent 4 }}
 
-  {{- with .Values.httpRoute.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-
 spec:
-  {{- with .Values.httpRoute.parentRefs }}
   parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    - name: nginx-gateway
 
-  {{- with .Values.httpRoute.hostnames }}
-  hostnames:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-
-  {{- with .Values.httpRoute.rules }}
   rules:
-    {{- range . }}
-    - {{- with .matches }}
-      matches:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
-      {{- with .filters }}
-      filters:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
-      backendRefs:
+    - backendRefs:
         - name: {{ $fullName }}
           port: {{ $svcPort }}
           weight: 1
-    {{- end }}
-  {{- end }}
 
 {{- end }}
