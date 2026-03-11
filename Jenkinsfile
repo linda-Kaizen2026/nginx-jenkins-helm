@@ -20,54 +20,76 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                echo "Cloning Git repository"
+                echo "Cloning repository"
                 git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
             }
         }
 
         stage('Verify Project Files') {
             steps {
+                echo "Listing project files"
                 sh "ls -la"
+            }
+        }
+
+        stage('Helm Lint Test') {
+            steps {
+                echo "Running Helm lint"
+
+                sh '''
+                helm lint ./helm/nginx-chart
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker Image"
-                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+
+                sh '''
+                docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                '''
             }
         }
 
         stage('DockerHub Login') {
             steps {
+
                 withCredentials([usernamePassword(
                     credentialsId: "${DOCKER_CREDENTIALS}",
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
-                    echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                    """
+
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                echo "Pushing Docker Image"
-                sh """
+                echo "Pushing Docker image"
+
+                sh '''
                 docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+
                 docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
+
                 docker push ${DOCKER_IMAGE}:latest
-                """
+                '''
             }
         }
 
         stage('Deploy to Kubernetes using Helm') {
+
             steps {
-                echo "Deploying application using Helm"
+
+                echo "Deploying application to Kubernetes"
 
                 withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIAL}", variable: 'KUBECONFIG')]) {
+
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
 
@@ -77,27 +99,37 @@ pipeline {
                     echo "Checking Kubernetes Cluster"
                     kubectl get nodes
 
+                    echo "Deploying Helm Chart"
+
                     helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
-                    --namespace ${K8S_NAMESPACE} \
-                    --create-namespace \
-                    --set image.repository=${DOCKER_IMAGE} \
-                    --set image.tag=${BUILD_NUMBER}
+                      --namespace ${K8S_NAMESPACE} \
+                      --create-namespace \
+                      --set image.repository=${DOCKER_IMAGE} \
+                      --set image.tag=${BUILD_NUMBER} \
+                      --atomic \
+                      --timeout 2m
                     '''
                 }
             }
         }
 
         stage('Verify Kubernetes Deployment') {
+
             steps {
+
                 withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIAL}", variable: 'KUBECONFIG')]) {
+
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
 
-                    echo "Pods in namespace:"
+                    echo "Pods:"
                     kubectl get pods -n ${K8S_NAMESPACE}
 
-                    echo "Services in namespace:"
+                    echo "Services:"
                     kubectl get svc -n ${K8S_NAMESPACE}
+
+                    echo "Deployments:"
+                    kubectl get deployments -n ${K8S_NAMESPACE}
                     '''
                 }
             }
@@ -114,5 +146,8 @@ pipeline {
             echo "Pipeline failed"
         }
 
+        always {
+            echo "Pipeline finished"
+        }
     }
 }
