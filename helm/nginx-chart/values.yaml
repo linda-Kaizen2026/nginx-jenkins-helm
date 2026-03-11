@@ -18,14 +18,14 @@ serviceAccount:
   name: ""
 
 service:
-  type: NodePort
+  type: ClusterIP
   port: 80
   targetPort: 80
   nodePort: 30080
 
 ingress:
-  enabled: false
-  className: ""
+  enabled: true
+  className: "nginx"
   annotations: {}
   hosts:
     - host: nginx.local

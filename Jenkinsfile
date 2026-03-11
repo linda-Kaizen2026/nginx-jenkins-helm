@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+	agent any
 
     environment {
         GIT_REPO = "https://github.com/linda-Kaizen2026/nginx-jenkins-helm.git"
