@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = "https://github.com/linda-Kaizen2026/nginx-jenkins-helm.git"
         GIT_BRANCH = "develop"
 
-        DOCKER_IMAGE = "yourdockerhubusername/nginx-demo"
+        DOCKER_IMAGE = "lindakaizen2026/nginx-app"
         DOCKER_CREDENTIALS = "dockerhub-creds"
 
         HELM_RELEASE = "nginx-release"
