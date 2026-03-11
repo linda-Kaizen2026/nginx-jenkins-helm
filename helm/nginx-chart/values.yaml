@@ -20,7 +20,7 @@ serviceAccount:
 service:
   type: ClusterIP
   port: 80
-  targetPort: 80
+  
 
 ingress:
   enabled: true
