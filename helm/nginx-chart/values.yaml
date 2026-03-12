@@ -9,6 +9,7 @@ image:
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
+
 nameOverride: ""
 fullnameOverride: ""
 
@@ -20,11 +21,10 @@ serviceAccount:
 service:
   type: ClusterIP
   port: 80
-  
 
 ingress:
   enabled: true
-  className: "nginx"
+  className: nginx
   annotations: {}
   hosts:
     - host: nginx.local
@@ -62,16 +62,31 @@ podSecurityContext: {}
 
 securityContext: {}
 
+# -----------------------------
+# Liveness Probe
+# Checks if container is alive
+# -----------------------------
 livenessProbe:
   httpGet:
     path: /
     port: 80
-  initialDelaySeconds: 30
-  periodSeconds: 10
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
 
+# -----------------------------
+# Readiness Probe
+# Checks if container is ready
+# to receive traffic
+# -----------------------------
 readinessProbe:
   httpGet:
     path: /
     port: 80
   initialDelaySeconds: 5
-  periodSeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
