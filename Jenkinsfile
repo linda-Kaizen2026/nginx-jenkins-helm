@@ -2,10 +2,10 @@ pipeline {
 	agent any
 
     environment {
-        GIT_REPO = "https://github.com/linda-Kaizen2026/nginx-jenkins-helm.git"
+        GIT_REPO = "${GITHUB_USER}"
         GIT_BRANCH = "develop"
 
-        DOCKER_IMAGE = "lindakaizen2026/nginx-app"
+        DOCKER_IMAGE = "${DOCKER_USER}/nginx-app"
         DOCKER_CREDENTIALS = "dockerhub-creds"
 
         KUBECONFIG_CREDENTIAL = "kubeconfig"
@@ -130,6 +130,10 @@ pipeline {
 
                     echo "Deployments:"
                     kubectl get deployments -n ${K8S_NAMESPACE}
+
+                    echo "Ingress:"
+                    kubectl get ingess -n ${K8S_NAMESPACE}
+
                     '''
                 }
             }
