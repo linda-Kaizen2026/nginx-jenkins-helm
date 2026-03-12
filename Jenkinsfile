@@ -132,7 +132,7 @@ pipeline {
                     kubectl get deployments -n ${K8S_NAMESPACE}
 
                     echo "Ingress:"
-                    kubectl get ingess -n ${K8S_NAMESPACE}
+                    kubectl get ingress -n ${K8S_NAMESPACE}
 
                     '''
                 }
